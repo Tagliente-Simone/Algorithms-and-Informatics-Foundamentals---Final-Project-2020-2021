@@ -97,58 +97,6 @@ pointer push(pointer head, int index, int cost){
     return head;
 }
 
-pointer insert(pointer pl, int e, int cost) {
-  pointer s, r;
-
-		/* la lista non contiene elementi */
-  if(pl==NULL) {
-    pl=malloc(sizeof(graph));
-    pl->index=e;
-    pl->cost = cost;
-    pl->next=NULL;
-    return pl; 
-  }
-
-
-		/* l'elemento va inserito in prima posizione */
-  if(pl->cost>=cost) {
-    s=pl;
-    pl=malloc(sizeof(graph));
-    pl->cost=cost;
-    pl->index = e;
-    pl->next=s;
-    return pl;
-  }
-
-
-
-			/* la lista ha piu' di un elemento */
-  s=pl;
-  while(s->next!=NULL) {
-
-    if(s->next->cost>cost) {
-      r=s->next;
-      s->next=malloc(sizeof(graph));
-      s->next->cost=cost;
-      s->next->index=e;
-      s->next->next=r;
-      return pl;
-    }
-
-    s=s->next;
-  }
-
-
-			/* se arrivo qui, l'elemento va inserito in fondo */
-  s->next=malloc(sizeof(graph));
-  s->next->cost=cost;
-  s->next->index=e;
-  s->next->next=NULL;
-
-
-  return pl;
-}
-
 void print_list(pointer head, int k) {
     pointer current = head;
     int counter = 0;
@@ -186,7 +134,6 @@ void parsing(unsigned int d, unsigned int matr[d][d], char in[], int i){
   }
   
 }
-
 
 unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
   unsigned int cost[d][d], distance[d], pred[d];
@@ -243,7 +190,6 @@ unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
     return sum;
 
 }
-
 
 int main(){
     pointer firstGraph = NULL;
