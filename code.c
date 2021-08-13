@@ -1,16 +1,166 @@
-// Dijkstra's Algorithm in C
-
 #include <stdio.h>
-#define INF 32768
-#define MAX 10
+#include<stdlib.h>
+#include<string.h>
+#define INF 327680000
+
+typedef struct graph {
+    unsigned int index;
+    unsigned int cost;
+    struct graph * next;
+} graph;
+
+typedef struct graph * pointer;
+
+unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]);
+void parsing(unsigned int d, unsigned int matrix[d][d], char in[], int i);
+void printMatrix(unsigned int d, unsigned int matrix[d][d]);
+pointer createNode();
+pointer push(pointer head, int index, int cost);
+void printlist(pointer head);
+void fillArray(int dim, int array[dim], pointer head);
+void bubbleSort(pointer start);
+void swap(pointer a, pointer b);
+
+void bubbleSort(pointer start){
+    int swapped;
+    pointer ptr1;
+    pointer lptr = NULL;
+  
+    /* Checking for empty list */
+    if (start == NULL)
+        return;
+  
+    do{
+        swapped = 0;
+        ptr1 = start;
+  
+        while (ptr1->next != lptr){
+            if (ptr1->cost > ptr1->next->cost){ 
+                swap(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    }
+    while (swapped);
+}
+
+void swap(pointer a, pointer b){
+    unsigned int cost = a->cost;
+    unsigned int index = a->index;
+
+    a->cost = b->cost;
+    b->cost = cost;
+    a->index = b->index;
+    b->index = index;
+}
+
+void fillArray(int dim, int array[dim], pointer head){
+
+    pointer tmp = head;
+    int counter = 0;
+
+    while(tmp != NULL){
+      array[counter] = tmp -> index;
+      tmp = tmp -> next;
+      counter++;
+    }
+}
+
+pointer createNode(){
+    pointer temp;
+    temp = (pointer)malloc(sizeof(graph));
+    temp->next = NULL;
+    return temp;
+}
+
+pointer push(pointer head, int index, int cost){
+    pointer temp,p;
+    
+    temp = createNode();
+    
+    temp->index = index;
+    temp->cost = cost;
+    if(head == NULL){
+        
+        head = temp;
+    }
+    else{
+        p  = head;
+        while(p->next != NULL){
+            p = p->next;
+        }
+        temp->next = p->next;
+        p->next = temp;
+    }
+    return head;
+}
+
+pointer insert(pointer pl, int e, int cost) {
+  pointer s, r;
+
+		/* la lista non contiene elementi */
+  if(pl==NULL) {
+    pl=malloc(sizeof(graph));
+    pl->index=e;
+    pl->cost = cost;
+    pl->next=NULL;
+    return pl; 
+  }
+
+
+		/* l'elemento va inserito in prima posizione */
+  if(pl->cost>=cost) {
+    s=pl;
+    pl=malloc(sizeof(graph));
+    pl->cost=cost;
+    pl->index = e;
+    pl->next=s;
+    return pl;
+  }
 
 
 
-int Dijkstra(int d, int Graph[d][d]);
-void parsing(int d, int matrix[d][d]);
-void printMatrix(int d, int matrix[d][d]);
+			/* la lista ha piu' di un elemento */
+  s=pl;
+  while(s->next!=NULL) {
 
-void printMatrix(int d, int matrix[d][d]){
+    if(s->next->cost>cost) {
+      r=s->next;
+      s->next=malloc(sizeof(graph));
+      s->next->cost=cost;
+      s->next->index=e;
+      s->next->next=r;
+      return pl;
+    }
+
+    s=s->next;
+  }
+
+
+			/* se arrivo qui, l'elemento va inserito in fondo */
+  s->next=malloc(sizeof(graph));
+  s->next->cost=cost;
+  s->next->index=e;
+  s->next->next=NULL;
+
+
+  return pl;
+}
+
+void print_list(pointer head, int k) {
+    pointer current = head;
+    int counter = 0;
+
+    while (current != NULL && counter < k) {
+        printf("%d ", current->index);
+        counter++;
+        current = current->next;
+    }
+}
+
+void printMatrix(unsigned int d, unsigned int matrix[d][d]){
     int i, j;
 
     for(i = 0; i < d; i++){
@@ -21,15 +171,28 @@ void printMatrix(int d, int matrix[d][d]){
     }
 }
 
-void parsing(int d, int matr[d][d]){
-
-
+void parsing(unsigned int d, unsigned int matr[d][d], char in[], int i){
+  const char s[2] = ",";
+  char *token;
+  int j = 0, num = 55;
+   
+  token = strtok(in, s);
+  
+  while( token != NULL ) {
+    num  = atoi(token); 
+    matr[i][j] = num;
+    token = strtok(NULL, s);
+    j++;
+  }
+  
 }
 
-int Dijkstra(int d, int Graph[d][d]) {
-  int cost[d][d], distance[d], pred[d];
-  int visited[d], count, mindistance, nextnode, i, j, sum = 0;
 
+unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
+  unsigned int cost[d][d], distance[d], pred[d];
+  unsigned int visited[d], count, mindistance, nextnode = 0, i, j, sum = 0;
+
+  if(pred[0]){}
   // Creating cost matrix
   for (i = 0; i < d; i++)
     for (j = 0; j < d; j++)
@@ -67,29 +230,57 @@ int Dijkstra(int d, int Graph[d][d]) {
     count++;
   }
 
-  // Printing the distance
-  for (i = 0; i < d; i++)
+  for (i = 0; i < d; i++){
     if (i != 0) {
-      sum = sum + distance[i];
+      if(distance[i] != INF){ 
+        sum = sum + distance[i];
+      }
+      //printf("DISTANCE %d: %d\n", i, distance[i]);
     }
-    printf("%d\n",sum);
+    //printf("%d ", sum);
+    //printf("\n");
+  }
     return sum;
 
 }
 
 
 int main(){
-    int d, sum, k;
-    char line[3000];
+    pointer firstGraph = NULL;
+    unsigned int d, sum = 0, k, i = 0, index = 0, param = 0;
+    char line[50000];
 
-    scanf("%d,%d", &d, &k);
-
-    int matrix[d][d];
-
-
-    while(fgets(line,  sizeof(line), stdin)){
-        parsing(d, matrix);
-        printMatrix(d, matrix);
+    if(param){}
+    param = scanf("%d %d", &d, &k);
+    printf("%d, %d\n", d, k);
+    unsigned int matrix[d][d];
+    while(fgets(line,  sizeof(line), stdin) != NULL){
+      switch(line[0]){
+        case 'A' : {
+          //printf("AggiungiGrafo\n");
+          i = 0;
+          break;
+        }
+        case 'T' : {
+          bubbleSort(firstGraph);
+          print_list(firstGraph, k);
+          printf("\n");
+          //fillArray(index, array, firstGraph);
+          //quicksort(array, 0, index - 1);
+          break;
+        }
+        default : {
+          parsing(d, matrix, line, i);
+          i++;
+          if(i == d){
+            //printMatrix(d, matrix);
+            sum = Dijkstra(d, matrix);
+            firstGraph = push(firstGraph, index, sum);
+            index++;
+            
+          }
+          break;
+        }
+      }
     }
-    Dijkstra(d, matrix);
 }
