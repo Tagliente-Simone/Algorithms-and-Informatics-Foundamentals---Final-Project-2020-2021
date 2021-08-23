@@ -1,146 +1,132 @@
-#include <stdio.h>
+#include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+
 #define INF 327680000
+#define parent(x) (x - 1) / 2
+#define left(x) 2 * x + 1
+#define right(x) 2 * x + 2
+//useful macros
 
 typedef struct graph {
     unsigned int index;
     unsigned int cost;
-    struct graph * next;
 } graph;
+//struct used to save the index of a graph and its value of the sum of his shortest paths
 
-typedef struct graph * pointer;
+typedef struct heap {
+  graph *rank;
+  int dim;
+  int size;
+} heap;
+//heap used to handle the ranking
 
-unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]);
+unsigned int dijkstra(unsigned int d, unsigned int Graph[d][d]);
+//it calculates the sum of shortest paths of a graph from node 0
+
 void parsing(unsigned int d, unsigned int matrix[d][d], char in[], int i);
-void printMatrix(unsigned int d, unsigned int matrix[d][d]);
-pointer createNode();
-pointer push(pointer head, int index, int cost);
-void printlist(pointer head);
-void fillArray(int dim, int array[dim], pointer head);
-void bubbleSort(pointer start);
-void swap(pointer a, pointer b);
+//it splits a string in numbers and put them in the matrix
 
-void bubbleSort(pointer start){
-    int swapped;
-    pointer ptr1;
-    pointer lptr = NULL;
+int to_int(int dim, char num[]);
+//custom atoi
+
+heap heap_malloc(int k);
+//it allocates memory for the heap 
+
+void print_heap(heap heap);
+//it prints the heap
+
+void swap(graph *graph1, graph *graph2);
+//it swaps two element of the heap
+
+void heapify(heap *hp, int i, heap heap);
+//it scans the heap and swaps element when the property is of the heap is violated
+
+void insertNode(heap *hp, int index, int cost, heap heap);
+//it inserts a new node in the heap without violating his property
+
+
+int main(){
+
+    heap heap;
+    unsigned int d, sum = 0, k, i = 0, index = -1, param = 0;
+
+    if(param){}
+    param = scanf("%d %d", &d, &k);
   
-    /* Checking for empty list */
-    if (start == NULL)
-        return;
-  
-    do{
-        swapped = 0;
-        ptr1 = start;
-  
-        while (ptr1->next != lptr){
-            if (ptr1->cost > ptr1->next->cost){ 
-                swap(ptr1, ptr1->next);
-                swapped = 1;
-            }
-            ptr1 = ptr1->next;
+    char line[d*10];
+    unsigned int matrix[d][d];
+
+    heap = heap_malloc(k);
+
+    while(fgets(line,  sizeof(line), stdin) != NULL){
+      switch(line[0]){
+        case 'A' : {
+          i = 0;
+          break;
         }
-        lptr = ptr1;
-    }
-    while (swapped);
-}
-
-void swap(pointer a, pointer b){
-    unsigned int cost = a->cost;
-    unsigned int index = a->index;
-
-    a->cost = b->cost;
-    b->cost = cost;
-    a->index = b->index;
-    b->index = index;
-}
-
-void fillArray(int dim, int array[dim], pointer head){
-
-    pointer tmp = head;
-    int counter = 0;
-
-    while(tmp != NULL){
-      array[counter] = tmp -> index;
-      tmp = tmp -> next;
-      counter++;
+        case 'T' : {
+          print_heap(heap);
+          printf("\n");
+          break;
+        }
+        default : {
+          parsing(d, matrix, line, i);
+          i++;
+          if(i == d){
+            index++;
+            sum = dijkstra(d, matrix);
+            insertNode(&heap, index, sum, heap);
+            }
+          break;
+        }
+      }
     }
 }
 
-pointer createNode(){
-    pointer temp;
-    temp = (pointer)malloc(sizeof(graph));
-    temp->next = NULL;
-    return temp;
-}
+void parsing(unsigned int d, unsigned int matr[d][d], char in[], int index){
 
-pointer push(pointer head, int index, int cost){
-    pointer temp,p;
-    
-    temp = createNode();
-    
-    temp->index = index;
-    temp->cost = cost;
-    if(head == NULL){
-        
-        head = temp;
+  char num[11] = "";
+  int i = 0, done = 0, j = 0, number = 0, rig = 0;
+
+  while(done == 0){
+    if(in[i] == ','){
+      num[j] = '\0';
+      number = to_int(11, num);
+      matr[index][rig] = number;
+      rig++;
+      i++;
+      j = 0;
+    }
+    else if(in[i] == '\n'){
+      num[j] = '\0';
+      number = to_int(11, num);
+      matr[index][rig] = number;
+      done = 1;
     }
     else{
-        p  = head;
-        while(p->next != NULL){
-            p = p->next;
-        }
-        temp->next = p->next;
-        p->next = temp;
+      num[j] = in[i];
+      j++;
+      i++;
     }
-    return head;
-}
-
-void print_list(pointer head, int k) {
-    pointer current = head;
-    int counter = 0;
-
-    while (current != NULL && counter < k) {
-        printf("%d ", current->index);
-        counter++;
-        current = current->next;
-    }
-}
-
-void printMatrix(unsigned int d, unsigned int matrix[d][d]){
-    int i, j;
-
-    for(i = 0; i < d; i++){
-        for(j = 0; j < d; j++){
-            printf("%d ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-}
-
-void parsing(unsigned int d, unsigned int matr[d][d], char in[], int i){
-  const char s[2] = ",";
-  char *token;
-  int j = 0, num = 55;
-   
-  token = strtok(in, s);
-  
-  while( token != NULL ) {
-    num  = atoi(token); 
-    matr[i][j] = num;
-    token = strtok(NULL, s);
-    j++;
   }
-  
 }
 
-unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
+int to_int(int dim, char num[]){
+  int i = 0, res = 0;
+
+  for(i = 0; num[i] != '\0'; i++){
+    res = res*10 + num[i] - '0';
+  }
+  return res;
+}
+
+unsigned int dijkstra(unsigned int d, unsigned int Graph[d][d]){
   unsigned int cost[d][d], distance[d], pred[d];
   unsigned int visited[d], count, mindistance, nextnode = 0, i, j, sum = 0;
 
   if(pred[0]){}
-  // Creating cost matrix
+
   for (i = 0; i < d; i++)
     for (j = 0; j < d; j++)
       if (Graph[i][j] == 0)
@@ -148,7 +134,7 @@ unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
       else
         cost[i][j] = Graph[i][j];
 
-  for (i = 0; i < d; i++) {
+  for (i = 0; i < d; i++){
     distance[i] = cost[0][i];
     pred[i] = 0;
     visited[i] = 0;
@@ -158,11 +144,11 @@ unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
   visited[0] = 1;
   count = 1;
 
-  while (count < d - 1) {
+  while (count < d - 1){
     mindistance = INF;
 
     for (i = 0; i < d; i++)
-      if (distance[i] < mindistance && !visited[i]) {
+      if (distance[i] < mindistance && !visited[i]){
         mindistance = distance[i];
         nextnode = i;
       }
@@ -170,63 +156,84 @@ unsigned int Dijkstra(unsigned int d, unsigned int Graph[d][d]) {
     visited[nextnode] = 1;
     for (i = 0; i < d; i++)
       if (!visited[i])
-        if (mindistance + cost[nextnode][i] < distance[i]) {
+        if (mindistance + cost[nextnode][i] < distance[i]){
           distance[i] = mindistance + cost[nextnode][i];
           pred[i] = nextnode;
         }
     count++;
   }
-
   for (i = 0; i < d; i++){
     if (i != 0) {
       if(distance[i] != INF){ 
         sum = sum + distance[i];
       }
-      //printf("DISTANCE %d: %d\n", i, distance[i]);
     }
-    //printf("%d ", sum);
-    //printf("\n");
   }
     return sum;
-
 }
 
-int main(){
-    pointer firstGraph = NULL;
-    unsigned int d, sum = 0, k, i = 0, index = 0, param = 0;
-    char line[50000];
+heap heap_malloc(int k){
+    heap hp;
 
-    if(param){}
-    param = scanf("%d %d", &d, &k);
-    printf("%d, %d\n", d, k);
-    unsigned int matrix[d][d];
-    while(fgets(line,  sizeof(line), stdin) != NULL){
-      switch(line[0]){
-        case 'A' : {
-          //printf("AggiungiGrafo\n");
-          i = 0;
-          break;
-        }
-        case 'T' : {
-          bubbleSort(firstGraph);
-          print_list(firstGraph, k);
-          printf("\n");
-          //fillArray(index, array, firstGraph);
-          //quicksort(array, 0, index - 1);
-          break;
-        }
-        default : {
-          parsing(d, matrix, line, i);
-          i++;
-          if(i == d){
-            //printMatrix(d, matrix);
-            sum = Dijkstra(d, matrix);
-            firstGraph = push(firstGraph, index, sum);
-            index++;
-            
-          }
-          break;
-        }
+    hp.size = 0;
+    hp.dim = k;
+    hp.rank = malloc((k+1) * sizeof(graph));
+
+    return hp;
+}
+
+void print_heap(heap heap){
+  int i;
+
+  for(i = 0; i < heap.dim && i < heap.size; i++){
+    if(i == heap.dim - 1 || i == heap.size - 1){
+      printf("%d", heap.rank[i].index);
+    }
+    else{
+      printf("%d ", heap.rank[i].index);
+    }
+  }
+}
+
+void swap(graph *graph1, graph *graph2){
+    graph temp = *graph1;
+
+    *graph1 = *graph2;
+    *graph2 = temp;
+}
+
+void heapify(heap *hp, int i, heap heap){
+    int largest = (left(i) < hp->size && hp->rank[left(i)].cost > hp->rank[i].cost) ? left(i) : i;
+    if(right(i) < hp->size && hp->rank[right(i)].cost > hp->rank[largest].cost){
+        largest = right(i);
+    }
+    if(largest != i){
+        swap(&(hp->rank[i]), &(hp->rank[largest]));
+        heapify(hp, largest, heap);
+    }
+}
+
+void insertNode(heap *hp, int index, int cost, heap heap){
+    graph graph;
+
+    graph.cost = cost;
+    graph.index = index;
+
+    int i = hp->size;
+
+    if(hp->size < hp->dim){
+      i = (hp->size)++;
+      while(i && graph.cost > hp->rank[parent(i)].cost){
+        hp->rank[i] = hp->rank[parent(i)];
+        i = parent(i);
       }
+      hp->rank[i] = graph;
+    }
+    else{
+      if(hp->rank[0].cost > cost){
+        hp->rank[0].cost = cost;
+        hp->rank[0].index = index;
+        heapify(hp, 0, heap);
+      }    
     }
 }
