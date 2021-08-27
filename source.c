@@ -203,14 +203,27 @@ void swap(graph *graph1, graph *graph2){
 }
 
 void heapify(heap *hp, int i, heap heap){
-    int largest = (left(i) < hp->size && hp->rank[left(i)].cost > hp->rank[i].cost) ? left(i) : i;
-    if(right(i) < hp->size && hp->rank[right(i)].cost > hp->rank[largest].cost){
-        largest = right(i);
+  
+    int l, r, posmax;
+
+    l = left(i);
+    r = right(i);
+
+    if(l <= hp->size && hp->rank[l].cost > hp->rank[i].cost){
+      posmax = l;
     }
-    if(largest != i){
-        swap(&(hp->rank[i]), &(hp->rank[largest]));
-        heapify(hp, largest, heap);
+    else{
+      posmax = i;
     }
+
+    if(r <= hp->size && hp->rank[r].cost > hp->rank[posmax].cost){
+      posmax = r;
+    }
+
+    if(posmax != i){
+      swap(&(hp->rank[i]), &(hp->rank[posmax]));
+      heapify(hp, posmax, heap);
+    } 
 }
 
 void insertNode(heap *hp, int index, int cost, heap heap){
